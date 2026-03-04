@@ -1,0 +1,872 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitality | Healthy Life & Learning Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        :root {
+            --primary: #4F46E5;
+            --secondary: #10B981;
+            --accent: #F59E0B;
+            --danger: #EF4444;
+            --dark: #1F2937;
+            --light: #F3F4F6;
+        }
+
+        body {
+            background-color: #F8FAFC;
+            color: var(--dark);
+        }
+
+        /* Glassmorphism & Modern UI */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .gradient-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .gradient-success {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .gradient-warm {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        .gradient-danger {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        /* Circular Progress */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 1s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Floating Nav for Mobile */
+        .mobile-nav {
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+        }
+        
+        .quote-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quote-card::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-size: 10rem;
+            color: rgba(255,255,255,0.1);
+            font-family: serif;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col md:flex-row">
+
+    <!-- Sidebar Navigation (Desktop) -->
+    <aside class="hidden md:flex flex-col w-64 glass-panel h-screen sticky top-0 z-50">
+        <div class="p-8">
+            <h1 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                <i class="ri-heart-pulse-fill mr-2"></i>Vitality
+            </h1>
+            <p class="text-xs text-gray-500 mt-1 font-medium">Track Life, Learn More</p>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-2">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-50 transition-all">
+                <i class="ri-dashboard-line text-lg mr-3"></i> Dashboard
+            </button>
+            <button onclick="switchTab('health')" id="nav-health" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-50 transition-all">
+                <i class="ri-run-line text-lg mr-3"></i> Kesehatan
+            </button>
+            <button onclick="switchTab('learning')" id="nav-learning" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-50 transition-all">
+                <i class="ri-book-open-line text-lg mr-3"></i> Belajar
+            </button>
+            <button onclick="switchTab('stats')" id="nav-stats" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-50 transition-all">
+                <i class="ri-bar-chart-box-line text-lg mr-3"></i> Statistik
+            </button>
+        </nav>
+
+        <div class="p-4">
+            <div class="bg-indigo-50 rounded-xl p-4">
+                <p class="text-xs font-bold text-indigo-800 mb-1">Pro Tip</p>
+                <p class="text-xs text-indigo-600 leading-relaxed">Minum air sebelum makan dapat membantu mengontrol nafsu makan.</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8 pb-24 md:pb-8 overflow-y-auto">
+        
+        <!-- Header Mobile -->
+        <div class="md:hidden flex justify-between items-center mb-6">
+            <h1 class="text-xl font-extrabold text-indigo-600">Vitality</h1>
+            <div class="text-sm font-medium text-gray-500" id="current-date-mobile"></div>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <section id="dashboard" class="space-y-6 fade-in">
+            <!-- Dynamic Quote Header -->
+            <div class="gradient-card rounded-3xl p-8 shadow-xl relative quote-card">
+                <div class="relative z-10">
+                    <div class="flex items-center space-x-2 mb-2 opacity-80">
+                        <i class="ri-lightbulb-flash-line"></i>
+                        <span class="text-xs font-bold uppercase tracking-wider">Motivasi Harian</span>
+                    </div>
+                    <h2 id="daily-quote" class="text-2xl md:text-3xl font-bold leading-tight mb-2">Loading inspiration...</h2>
+                    <p id="daily-quote-author" class="text-sm opacity-90 font-medium"></p>
+                </div>
+                <div class="absolute bottom-0 right-0 p-4 opacity-20">
+                    <i class="ri-quotes-l text-9xl"></i>
+                </div>
+            </div>
+
+            <!-- Quick Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Water -->
+                <div class="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="switchTab('health')">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3 text-xl">
+                        <i class="ri-drop-fill"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="dash-water">0ml</span>
+                    <span class="text-xs text-gray-500 font-medium">Air Minum</span>
+                </div>
+                <!-- Steps -->
+                <div class="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="switchTab('health')">
+                    <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-3 text-xl">
+                        <i class="ri-footprint-fill"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="dash-steps">0</span>
+                    <span class="text-xs text-gray-500 font-medium">Langkah</span>
+                </div>
+                <!-- Sugar -->
+                <div class="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="switchTab('health')">
+                    <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-3 text-xl">
+                        <i class="ri-cake-2-fill"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="dash-sugar">0g</span>
+                    <span class="text-xs text-gray-500 font-medium">Gula</span>
+                </div>
+                <!-- Learning -->
+                <div class="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="switchTab('learning')">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-3 text-xl">
+                        <i class="ri-book-mark-fill"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="dash-learning">0</span>
+                    <span class="text-xs text-gray-500 font-medium">Topik Baru</span>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Content -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Circular Progress -->
+                <div class="md:col-span-2 glass-panel p-6 rounded-3xl">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">Progress Hari Ini</h3>
+                    <div class="flex flex-wrap justify-around gap-6">
+                        <!-- Ring 1: Water -->
+                        <div class="flex flex-col items-center">
+                            <div class="relative w-32 h-32">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-gray-200 stroke-current" stroke-width="8" cx="50" cy="50" r="40" fill="transparent"></circle>
+                                    <circle id="ring-water" class="text-blue-500 progress-ring__circle stroke-current" stroke-width="8" stroke-linecap="round" cx="50" cy="50" r="40" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                </svg>
+                                <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
+                                    <i class="ri-drop-fill text-blue-500 text-xl"></i>
+                                    <span id="ring-water-text" class="text-sm font-bold text-gray-700">0%</span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-sm font-medium text-gray-600">Hidrasi</p>
+                        </div>
+                        <!-- Ring 2: Steps -->
+                        <div class="flex flex-col items-center">
+                            <div class="relative w-32 h-32">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-gray-200 stroke-current" stroke-width="8" cx="50" cy="50" r="40" fill="transparent"></circle>
+                                    <circle id="ring-steps" class="text-green-500 progress-ring__circle stroke-current" stroke-width="8" stroke-linecap="round" cx="50" cy="50" r="40" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                </svg>
+                                <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
+                                    <i class="ri-footprint-fill text-green-500 text-xl"></i>
+                                    <span id="ring-steps-text" class="text-sm font-bold text-gray-700">0%</span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-sm font-medium text-gray-600">Aktivitas</p>
+                        </div>
+                         <!-- Ring 3: Learning -->
+                         <div class="flex flex-col items-center">
+                            <div class="relative w-32 h-32">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-gray-200 stroke-current" stroke-width="8" cx="50" cy="50" r="40" fill="transparent"></circle>
+                                    <circle id="ring-learning" class="text-purple-500 progress-ring__circle stroke-current" stroke-width="8" stroke-linecap="round" cx="50" cy="50" r="40" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                </svg>
+                                <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
+                                    <i class="ri-brain-fill text-purple-500 text-xl"></i>
+                                    <span id="ring-learning-text" class="text-sm font-bold text-gray-700">0%</span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-sm font-medium text-gray-600">Belajar</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Checklist -->
+                <div class="glass-panel p-6 rounded-3xl">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Checklist Sehat</h3>
+                    <div class="space-y-3">
+                        <label class="flex items-center p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200">
+                            <input type="checkbox" id="check-sleep" onchange="toggleCheck('sleep')" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
+                            <span class="ml-3 text-sm font-medium text-gray-700">Tidur 7-8 Jam</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200">
+                            <input type="checkbox" id="check-sugar" onchange="toggleCheck('sugar')" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
+                            <span class="ml-3 text-sm font-medium text-gray-700">Kurangi Gula</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200">
+                            <input type="checkbox" id="check-move" onchange="toggleCheck('move')" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
+                            <span class="ml-3 text-sm font-medium text-gray-700">Gerak 30 Menit</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200">
+                            <input type="checkbox" id="check-learn" onchange="toggleCheck('learn')" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
+                            <span class="ml-3 text-sm font-medium text-gray-700">Pelajari 1 Hal Baru</span>
+                        </label>
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-gray-100">
+                        <p class="text-xs text-center text-gray-400">Selesaikan checklist untuk menjaga konsistensi!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HEALTH TAB -->
+        <section id="health" class="hidden space-y-6 fade-in">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800">Tracker Kesehatan</h2>
+                <button onclick="resetDay()" class="text-xs text-red-500 font-medium hover:text-red-700">Reset Hari Ini</button>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Water Input -->
+                <div class="glass-panel p-6 rounded-3xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-700"><i class="ri-drop-line mr-2 text-blue-500"></i>Input Air</h3>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-bold">Target: <span id="target-water-display">2000</span>ml</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <button onclick="addData('water', 250)" class="p-3 rounded-xl bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 transition">250ml</button>
+                        <button onclick="addData('water', 500)" class="p-3 rounded-xl bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 transition">500ml</button>
+                        <button onclick="customInput('water')" class="p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition">Custom</button>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="bar-water" class="bg-blue-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Steps Input -->
+                <div class="glass-panel p-6 rounded-3xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-700"><i class="ri-footprint-line mr-2 text-green-500"></i>Input Langkah</h3>
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-bold">Target: <span id="target-steps-display">10000</span></span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <button onclick="addData('steps', 1000)" class="p-3 rounded-xl bg-green-50 text-green-700 font-bold hover:bg-green-100 transition">1k</button>
+                        <button onclick="addData('steps', 2500)" class="p-3 rounded-xl bg-green-50 text-green-700 font-bold hover:bg-green-100 transition">2.5k</button>
+                        <button onclick="customInput('steps')" class="p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition">Custom</button>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="bar-steps" class="bg-green-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Sugar Input -->
+                <div class="glass-panel p-6 rounded-3xl border-l-4 border-red-400">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-700"><i class="ri-cake-line mr-2 text-red-500"></i>Konsumsi Gula</h3>
+                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-bold">Max: <span id="target-sugar-display">50</span>g</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4">Hati-hati! Gula berlebih merusak energi dan kulit.</p>
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <button onclick="addData('sugar', 5)" class="p-3 rounded-xl bg-red-50 text-red-700 font-bold hover:bg-red-100 transition">+5g</button>
+                        <button onclick="addData('sugar', 10)" class="p-3 rounded-xl bg-red-50 text-red-700 font-bold hover:bg-red-100 transition">+10g</button>
+                        <button onclick="customInput('sugar')" class="p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition">Custom</button>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="bar-sugar" class="bg-red-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Sleep & Weight -->
+                <div class="glass-panel p-6 rounded-3xl">
+                    <h3 class="font-bold text-gray-700 mb-4">Data Tubuh</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs text-gray-500 font-bold">Berat Badan (kg)</label>
+                            <div class="flex mt-1">
+                                <input type="number" id="input-weight" class="w-full p-2 border rounded-l-lg focus:outline-none focus:border-indigo-500" placeholder="0.0">
+                                <button onclick="addData('weight', 0)" class="bg-indigo-600 text-white px-3 rounded-r-lg hover:bg-indigo-700"><i class="ri-save-line"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 font-bold">Durasi Tidur (Jam)</label>
+                            <div class="flex mt-1">
+                                <input type="number" id="input-sleep" class="w-full p-2 border rounded-l-lg focus:outline-none focus:border-indigo-500" placeholder="0">
+                                <button onclick="addData('sleep', 0)" class="bg-indigo-600 text-white px-3 rounded-r-lg hover:bg-indigo-700"><i class="ri-save-line"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEARNING TAB -->
+        <section id="learning" class="hidden space-y-6 fade-in">
+            <div class="gradient-warm rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-bold mb-2">Hari Ini Belajar Apa?</h2>
+                    <p class="opacity-90">Investasi terbaik adalah investasi leher ke atas. Catat progres belajarmu di sini.</p>
+                </div>
+                <i class="ri-book-open-fill absolute -bottom-4 -right-4 text-9xl opacity-20 rotate-12"></i>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Input Form -->
+                <div class="md:col-span-1 glass-panel p-6 rounded-3xl h-fit">
+                    <h3 class="font-bold text-gray-800 mb-4">Catat Topik Baru</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Topik / Skill</label>
+                            <input type="text" id="learn-topic" class="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Contoh: Bahasa Jepang, Coding...">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Durasi (Menit)</label>
+                            <input type="number" id="learn-duration" class="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="30">
+                        </div>
+                        <button onclick="addLearning()" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition transform hover:-translate-y-1">
+                            <i class="ri-add-circle-line mr-2"></i> Simpan Belajar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="md:col-span-2 glass-panel p-6 rounded-3xl">
+                    <h3 class="font-bold text-gray-800 mb-4">Riwayat Belajar Hari Ini</h3>
+                    <div id="learning-list" class="space-y-3">
+                        <!-- Items injected by JS -->
+                        <div class="text-center py-10 text-gray-400">
+                            <i class="ri-book-read-line text-4xl mb-2"></i>
+                            <p>Belum ada catatan belajar hari ini.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS TAB -->
+        <section id="stats" class="hidden space-y-6 fade-in">
+            <h2 class="text-2xl font-bold text-gray-800">Statistik Mingguan</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass-panel p-6 rounded-3xl">
+                    <h3 class="font-bold text-gray-700 mb-4">Aktivitas Fisik</h3>
+                    <canvas id="chart-activity"></canvas>
+                </div>
+                <div class="glass-panel p-6 rounded-3xl">
+                    <h3 class="font-bold text-gray-700 mb-4">Konsumsi Gula vs Target</h3>
+                    <canvas id="chart-sugar"></canvas>
+                </div>
+            </div>
+            
+            <div class="glass-panel p-6 rounded-3xl">
+                <h3 class="font-bold text-gray-700 mb-4">Riwayat Data</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3">Tanggal</th>
+                                <th class="px-6 py-3">Langkah</th>
+                                <th class="px-6 py-3">Air (ml)</th>
+                                <th class="px-6 py-3">Gula (g)</th>
+                                <th class="px-6 py-3">Belajar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 w-full glass-panel mobile-nav z-50 flex justify-around py-3 px-2">
+        <button onclick="switchTab('dashboard')" class="nav-item-mobile flex flex-col items-center text-gray-400 w-16">
+            <i class="ri-dashboard-line text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Home</span>
+        </button>
+        <button onclick="switchTab('health')" class="nav-item-mobile flex flex-col items-center text-gray-400 w-16">
+            <i class="ri-run-line text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Sehat</span>
+        </button>
+        <button onclick="switchTab('learning')" class="nav-item-mobile flex flex-col items-center text-gray-400 w-16">
+            <i class="ri-book-open-line text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Belajar</span>
+        </button>
+        <button onclick="switchTab('stats')" class="nav-item-mobile flex flex-col items-center text-gray-400 w-16">
+            <i class="ri-bar-chart-box-line text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Stats</span>
+        </button>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 right-5 md:top-10 md:right-10 bg-gray-800 text-white px-6 py-4 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center">
+        <i id="toast-icon" class="ri-checkbox-circle-fill text-green-400 text-xl mr-3"></i>
+        <span id="toast-message" class="font-medium"></span>
+    </div>
+
+    <script>
+        // ==================== DATA & STATE ====================
+        let appData = JSON.parse(localStorage.getItem('vitalityData')) || {
+            today: new Date().toISOString().split('T')[0],
+            water: 0,
+            steps: 0,
+            sugar: 0,
+            weight: 0,
+            sleep: 0,
+            checklist: { sleep: false, sugar: false, move: false, learn: false },
+            learningLog: [],
+            history: {}
+        };
+
+        const targets = {
+            water: 2000,
+            steps: 10000,
+            sugar: 50,
+            learning: 30 // minutes
+        };
+
+        // ==================== MOTIVATION ENGINE ====================
+        const quotes = [
+            { text: "Kesehatan adalah investasi, bukan pengeluaran.", author: "Unknown" },
+            { text: "Tubuhmu adalah satu-satunya tempat yang harus kamu tinggali seumur hidup.", author: "Jim Rohn" },
+            { text: "Jangan menunggu sehat untuk bahagia, tapi berbahagialah untuk menjadi sehat.", author: "Unknown" },
+            { text: "Disiplin adalah melakukan apa yang harus dilakukan, bahkan ketika kamu tidak ingin melakukannya.", author: "Unknown" },
+            { text: "Investasi terbaik yang bisa kamu buat adalah investasi pada dirimu sendiri.", author: "Warren Buffett" },
+            { text: "Air adalah sumber kehidupan. Minumlah sebelum haus.", author: "Health Tip" },
+            { text: "Gula adalah racun manis. Kurangi untuk hidup lebih panjang.", author: "Nutrition Fact" },
+            { text: "Belajar sesuatu yang baru setiap hari membuat otak tetap muda.", author: "Unknown" },
+            { text: "Perjalanan seribu mil dimulai dengan satu langkah.", author: "Lao Tzu" },
+            { text: "Konsistensi adalah kunci. Sedikit demi sedikit, lama-lama menjadi bukit.", author: "Peribahasa" }
+        ];
+
+        function loadMotivation() {
+            // Pick random quote based on date seed so it stays same all day
+            const today = new Date().toDateString();
+            let seed = 0;
+            for (let i = 0; i < today.length; i++) {
+                seed += today.charCodeAt(i);
+            }
+            const index = seed % quotes.length;
+            
+            document.getElementById('daily-quote').textContent = quotes[index].text;
+            document.getElementById('daily-quote-author').textContent = "- " + quotes[index].author;
+        }
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkNewDay();
+            loadMotivation();
+            updateUI();
+            renderLearningLog();
+            renderHistoryTable();
+            initCharts();
+            
+            // Set date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date-mobile').textContent = new Date().toLocaleDateString('id-ID', options);
+        });
+
+        function checkNewDay() {
+            const today = new Date().toISOString().split('T')[0];
+            if (appData.today !== today) {
+                // Save yesterday to history
+                appData.history[appData.today] = {
+                    water: appData.water,
+                    steps: appData.steps,
+                    sugar: appData.sugar,
+                    learningCount: appData.learningLog.length
+                };
+                
+                // Reset for today
+                appData = {
+                    today: today,
+                    water: 0,
+                    steps: 0,
+                    sugar: 0,
+                    weight: appData.weight, // Keep weight
+                    sleep: 0,
+                    checklist: { sleep: false, sugar: false, move: false, learn: false },
+                    learningLog: [],
+                    history: appData.history
+                };
+                saveData();
+                showToast("Selamat Pagi! Hari baru, semangat baru! 🌅");
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('vitalityData', JSON.stringify(appData));
+            updateUI();
+        }
+
+        // ==================== NAVIGATION ====================
+        function switchTab(tabId) {
+            // Hide all sections
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            // Show target
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Update Desktop Nav
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active', 'bg-indigo-50', 'text-indigo-600');
+                if(el.id === `nav-${tabId}`) el.classList.add('active');
+            });
+
+            // Update Mobile Nav
+            document.querySelectorAll('.nav-item-mobile').forEach(el => {
+                el.classList.remove('text-indigo-600');
+                el.classList.add('text-gray-400');
+            });
+            // Simple mapping for mobile active state
+            const mobileMap = { 'dashboard': 0, 'health': 1, 'learning': 2, 'stats': 3 };
+            if(mobileMap[tabId] !== undefined) {
+                const btn = document.querySelectorAll('.nav-item-mobile')[mobileMap[tabId]];
+                btn.classList.remove('text-gray-400');
+                btn.classList.add('text-indigo-600');
+            }
+
+            if(tabId === 'stats') updateCharts();
+            window.scrollTo(0,0);
+        }
+
+        // ==================== CORE LOGIC ====================
+        function addData(type, value) {
+            if (type === 'weight' || type === 'sleep') {
+                const input = document.getElementById(`input-${type}`);
+                value = parseFloat(input.value);
+                if (!value) return showToast("Isi nilai dulu!", "error");
+                input.value = '';
+            }
+
+            if (type === 'sugar' && appData.sugar + value > targets.sugar * 1.2) {
+                if(!confirm("⚠️ Peringatan: Ini melebihi batas gula harian! Lanjutkan?")) return;
+            }
+
+            appData[type] += value;
+            
+            // Auto check checklist
+            if (type === 'steps' && appData.steps >= 5000) appData.checklist.move = true;
+            if (type === 'water' && appData.water >= 1500) appData.checklist.move = true; // Overlap logic for simplicity
+            
+            saveData();
+            showToast(`+${value} ${type === 'water' ? 'ml' : type === 'steps' ? 'langkah' : 'g'} tercatat!`);
+        }
+
+        function customInput(type) {
+            const val = prompt(`Masukkan jumlah ${type}:`);
+            if (val && !isNaN(val)) {
+                addData(type, parseFloat(val));
+            }
+        }
+
+        function toggleCheck(type) {
+            appData.checklist[type] = !appData.checklist[type];
+            if (type === 'learn' && appData.checklist[type]) {
+                // Trigger learning check if not done
+                if (appData.learningLog.length === 0) {
+                    showToast("Jangan lupa catat apa yang kamu pelajari!", "info");
+                }
+            }
+            saveData();
+        }
+
+        function addLearning() {
+            const topic = document.getElementById('learn-topic').value;
+            const duration = parseInt(document.getElementById('learn-duration').value) || 0;
+
+            if (!topic) return showToast("Nama topik wajib diisi!", "error");
+
+            appData.learningLog.push({
+                topic,
+                duration,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+
+            appData.checklist.learn = true;
+            
+            document.getElementById('learn-topic').value = '';
+            document.getElementById('learn-duration').value = '';
+            
+            saveData();
+            renderLearningLog();
+            showToast("Topik belajar tercatat! 🧠");
+        }
+
+        function deleteLearning(index) {
+            appData.learningLog.splice(index, 1);
+            if (appData.learningLog.length === 0) appData.checklist.learn = false;
+            saveData();
+            renderLearningLog();
+        }
+
+        function resetDay() {
+            if(confirm("Reset semua data hari ini?")) {
+                appData.water = 0;
+                appData.steps = 0;
+                appData.sugar = 0;
+                appData.sleep = 0;
+                appData.checklist = { sleep: false, sugar: false, move: false, learn: false };
+                appData.learningLog = [];
+                saveData();
+                showToast("Data hari ini direset.");
+            }
+        }
+
+        // ==================== UI UPDATES ====================
+        function updateUI() {
+            // Dashboard Numbers
+            document.getElementById('dash-water').textContent = `${appData.water}ml`;
+            document.getElementById('dash-steps').textContent = appData.steps.toLocaleString();
+            document.getElementById('dash-sugar').textContent = `${appData.sugar}g`;
+            document.getElementById('dash-learning').textContent = appData.learningLog.length;
+
+            // Targets Display
+            document.getElementById('target-water-display').textContent = targets.water;
+            document.getElementById('target-steps-display').textContent = targets.steps.toLocaleString();
+            document.getElementById('target-sugar-display').textContent = targets.sugar;
+
+            // Progress Bars & Rings
+            updateProgress('water', appData.water, targets.water);
+            updateProgress('steps', appData.steps, targets.steps);
+            updateProgress('sugar', appData.sugar, targets.sugar, true); // True = is limit (reverse logic visually or color)
+            updateProgress('learning', appData.learningLog.reduce((a,b)=>a+b.duration,0), 60); // Target 1 hour learning
+
+            // Checklist
+            document.getElementById('check-sleep').checked = appData.checklist.sleep;
+            document.getElementById('check-sugar').checked = appData.checklist.sugar;
+            document.getElementById('check-move').checked = appData.checklist.move;
+            document.getElementById('check-learn').checked = appData.checklist.learn;
+        }
+
+        function updateProgress(type, current, max, isLimit = false) {
+            const percent = Math.min((current / max) * 100, 100);
+            
+            // Linear Bar
+            const bar = document.getElementById(`bar-${type}`);
+            if (bar) bar.style.width = `${percent}%`;
+
+            // Circular Ring
+            const circle = document.getElementById(`ring-${type}`);
+            const text = document.getElementById(`ring-${type}-text`);
+            if (circle && text) {
+                const circumference = 251.2;
+                const offset = circumference - (percent / 100) * circumference;
+                circle.style.strokeDashoffset = offset;
+                text.textContent = `${Math.round(percent)}%`;
+                
+                // Color change if limit exceeded
+                if (isLimit && current > max) {
+                    circle.classList.remove('text-red-500');
+                    circle.classList.add('text-orange-600');
+                }
+            }
+        }
+
+        function renderLearningLog() {
+            const container = document.getElementById('learning-list');
+            if (appData.learningLog.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-gray-400">
+                        <i class="ri-book-read-line text-4xl mb-2"></i>
+                        <p>Belum ada catatan belajar hari ini.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = appData.learningLog.map((item, index) => `
+                <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold mr-3">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">${item.topic}</h4>
+                            <p class="text-xs text-gray-500">${item.duration} menit • ${item.time}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteLearning(${index})" class="text-gray-300 hover:text-red-500 transition">
+                        <i class="ri-delete-bin-line"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-table-body');
+            const history = appData.history;
+            const dates = Object.keys(history).sort().reverse().slice(0, 7); // Last 7 days
+
+            if (dates.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center">Belum ada riwayat.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = dates.map(date => {
+                const d = history[date];
+                return `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">${date}</td>
+                        <td class="px-6 py-4">${d.steps.toLocaleString()}</td>
+                        <td class="px-6 py-4">${d.water}ml</td>
+                        <td class="px-6 py-4 text-red-500">${d.sugar}g</td>
+                        <td class="px-6 py-4"><span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">${d.learningCount} Topik</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==================== CHARTS ====================
+        let charts = {};
+
+        function initCharts() {
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            Chart.defaults.color = '#64748b';
+        }
+
+        function updateCharts() {
+            const history = appData.history;
+            const dates = Object.keys(history).sort().slice(-7);
+            
+            const stepsData = dates.map(d => history[d].steps);
+            const sugarData = dates.map(d => history[d].sugar);
+
+            // Activity Chart
+            if (charts.activity) charts.activity.destroy();
+            const ctx1 = document.getElementById('chart-activity').getContext('2d');
+            charts.activity = new Chart(ctx1, {
+                type: 'bar',
+                 {
+                    labels: dates.map(d => d.slice(5)),
+                    datasets: [{
+                        label: 'Langkah',
+                         stepsData,
+                        backgroundColor: '#10B981',
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            // Sugar Chart
+            if (charts.sugar) charts.sugar.destroy();
+            const ctx2 = document.getElementById('chart-sugar').getContext('2d');
+            charts.sugar = new Chart(ctx2, {
+                type: 'line',
+                 {
+                    labels: dates.map(d => d.slice(5)),
+                    datasets: [{
+                        label: 'Gula (g)',
+                         sugarData,
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // ==================== UTILS ====================
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const text = document.getElementById('toast-message');
+            
+            text.textContent = msg;
+            
+            if (type === "error") {
+                icon.className = "ri-error-warning-fill text-red-400 text-xl mr-3";
+            } else if (type === "info") {
+                icon.className = "ri-information-fill text-blue-400 text-xl mr-3";
+            } else {
+                icon.className = "ri-checkbox-circle-fill text-green-400 text-xl mr-3";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+```
